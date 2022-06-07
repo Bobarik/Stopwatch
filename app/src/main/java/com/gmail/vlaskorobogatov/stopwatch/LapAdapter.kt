@@ -8,11 +8,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class LapAdapter(context: Context, list: List<Int>) : RecyclerView.Adapter<LapAdapter.ViewHolder>() {
+class LapAdapter(private val context: Context, list: List<Long>) : RecyclerView.Adapter<LapAdapter.ViewHolder>() {
 
-    val inflater: LayoutInflater = LayoutInflater.from(context)
-    val laps = list
-    val context = context
+    private val inflater: LayoutInflater = LayoutInflater.from(context)
+    private val laps = list
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val img: ImageView = itemView.findViewById(R.id.flag)
@@ -25,7 +24,7 @@ class LapAdapter(context: Context, list: List<Int>) : RecyclerView.Adapter<LapAd
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val lap: Int = laps[position]
+        val lap: Long = laps[position]
         holder.img.setImageResource(R.drawable.flag)
         holder.text.text = formatSeconds(context, lap)
     }
