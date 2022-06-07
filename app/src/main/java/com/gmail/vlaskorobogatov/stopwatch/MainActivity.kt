@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
             paused = false
             settingsButton.isEnabled = false
             progressBar.visibility = View.VISIBLE
-            startButton.text = getString(R.string.flag)
+            startButton.text = "Lap"
             future =
                 backgroundExecutor.scheduleWithFixedDelay(runnable, 0, 100, TimeUnit.MILLISECONDS)
         } else {
