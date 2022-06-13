@@ -5,4 +5,6 @@
     <string name="timer">There should be a timer</string>
     <string name="mmss">%1$s:%2$s.%3$s</string>
     <string name="settings">Settings</string>
+    <string name="number">%1$s</string>
+    <string name="lap">Lap</string>
 </resources>

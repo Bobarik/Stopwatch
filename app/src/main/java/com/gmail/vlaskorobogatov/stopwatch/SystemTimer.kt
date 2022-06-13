@@ -2,6 +2,7 @@ package com.gmail.vlaskorobogatov.stopwatch
 
 class SystemTimer() : Timer {
     private var startMillis: Long = 0
+    override var upperLimit: Long = Long.MAX_VALUE
     var diff: Long = 0
         private set
 
@@ -22,4 +23,9 @@ class SystemTimer() : Timer {
         return diff
     }
 
+    override fun isOverLimit(): Boolean {
+        if (diff >= upperLimit)
+            return true
+        return false
+    }
 }

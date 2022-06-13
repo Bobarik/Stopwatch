@@ -5,8 +5,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.res.ColorStateList
+import android.content.res.TypedArray
 import android.graphics.Color
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
@@ -18,14 +20,13 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 import kotlin.random.Random
+
 
 class MainActivity : AppCompatActivity() {
 
     private val timer: Timer = SystemTimer()
     private var paused: Boolean = true
-    private var upperLimit: Int? = null
     private var laps: ArrayList<Long> = ArrayList()
     private lateinit var adapter: LapAdapter
     private lateinit var future: ScheduledFuture<*>
@@ -35,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        updateTextView(0)
+        textView.text = formatSeconds(this, 0L)
 
         val recycler: RecyclerView = findViewById(R.id.recyclerView)
         adapter = LapAdapter(this, laps)
@@ -51,13 +52,6 @@ class MainActivity : AppCompatActivity() {
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun updateTextView(diff: Long) {
-        val timeMM = (diff / 10 % 100).toString().padStart(2, '0')
-        val timeS = (diff / 1000 % 60).toString().padStart(2, '0')
-        val timeM = (diff / 60000).toString().padStart(2, '0')
-        textView.text = getString(R.string.mmss, timeM, timeS, timeMM)
-    }
-
     private fun changeColor() {
         val color = Color.argb(255, Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
         progressBar.indeterminateTintList = ColorStateList.valueOf(color)
@@ -65,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
     private val runnable: Runnable = Runnable {
         val diff = timer.getTime()
-        if (upperLimit != null && diff >= upperLimit!!) {
+        if (timer.isOverLimit()) {
             textView.setTextColor(Color.RED)
             val notificationBuilder = NotificationCompat
                 .Builder(applicationContext, "org.hyperskill")
@@ -76,7 +70,7 @@ class MainActivity : AppCompatActivity() {
                 applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.notify(393939, notificationBuilder.build())
         }
-        updateTextView(diff)
+        textView.text = formatSeconds(this, diff)
         if (diff % 1000 == 0L) {
             changeColor()
         }
@@ -92,7 +86,7 @@ class MainActivity : AppCompatActivity() {
             paused = false
             settingsButton.isEnabled = false
             progressBar.visibility = View.VISIBLE
-            startButton.text = "Lap"
+            startButton.text = getString(R.string.lap)
             timer.resume()
             future =
                 backgroundExecutor.scheduleWithFixedDelay(runnable, 0, 10, TimeUnit.MILLISECONDS)
@@ -102,20 +96,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun resetTimer(view: View) {
+        val attrs = IntArray(1)
+        attrs[0] = android.R.attr.textColor
+        val ta: TypedArray = obtainStyledAttributes(R.style.Stopwatch, attrs)
+
         startButton.text = getString(R.string.startText)
         if (!future.isCancelled)
             future.cancel(false)
         progressBar.visibility = View.INVISIBLE
-        progressBar.visibility = View.INVISIBLE
         if (paused) {
             timer.reset()
-            updateTextView(0L)
+            textView.setTextColor(ta.getColor(0, Color.MAGENTA))
+            textView.text = formatSeconds(this, 0L)
             settingsButton.isEnabled = true
             adapter.notifyItemRangeRemoved(0, laps.size)
             laps.clear()
         } else {
             paused = true
         }
+        ta.recycle()
     }
 
     fun settingsDialog(view: View) {
@@ -125,7 +124,7 @@ class MainActivity : AppCompatActivity() {
             .setView(contentView)
             .setPositiveButton("OK") { _, _ ->
                 val editText = contentView.findViewById<EditText>(R.id.upperLimitEditText)
-                upperLimit = editText.text.toString().toInt()
+                timer.upperLimit = editText.text.toString().toLong() * 1000L
             }
             .setNegativeButton("Cancel", null)
             .show()
