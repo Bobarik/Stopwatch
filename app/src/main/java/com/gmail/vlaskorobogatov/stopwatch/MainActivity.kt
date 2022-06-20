@@ -8,7 +8,6 @@ import android.content.res.ColorStateList
 import android.content.res.TypedArray
 import android.graphics.Color
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
@@ -87,6 +86,7 @@ class MainActivity : AppCompatActivity() {
             settingsButton.isEnabled = false
             progressBar.visibility = View.VISIBLE
             startButton.text = getString(R.string.lap)
+            resetButton.text = getString(R.string.pause)
             timer.resume()
             future =
                 backgroundExecutor.scheduleWithFixedDelay(runnable, 0, 10, TimeUnit.MILLISECONDS)
@@ -113,6 +113,7 @@ class MainActivity : AppCompatActivity() {
             laps.clear()
         } else {
             paused = true
+            resetButton.text = getString(R.string.resetText)
         }
         ta.recycle()
     }
